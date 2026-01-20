@@ -1,96 +1,213 @@
-# 🚀 Prompt2Repo 准入考核 (Entrance Challenge)
+# ShortLink - URL Shortener Service
 
-## 📌 考核背景
-本项目寻找具备 **"AI Native" (Vibe Coding)** 能力的资深工程师。我们需要你展示如何利用 **Cursor / Trae / Claude Code** 等 AI 工具，快速构建**工程化标准**的应用。
+基于 Go 语言实现的短链接生成服务，采用清晰的分层架构设计。
 
-> **核心考核点**：
-> 1. **AI 驾驭能力**：不仅是生成代码，而是生成架构、调试 Bug、优化工程。
-> 2. **Docker 交付标准**：强制容器化交付，拒绝“在我本地能跑”的代码。
-> 3. **全栈审美**：拒绝简陋 UI，需具备商业级交付意识。
+## 📁 项目结构
 
----
+```
+backend/
+├── main.go                          # 应用程序入口
+├── go.mod                           # Go 模块定义
+├── go.sum                           # 依赖锁定
+├── Dockerfile                       # Docker 构建配置
+└── internal/                        # 内部包（私有）
+    ├── config/                      # 配置层
+    │   └── config.go                # 环境变量配置加载
+    ├── models/                      # 数据模型层
+    │   └── link.go                  # Link 实体和 DTO
+    ├── repository/                  # 数据访问层
+    │   ├── repository.go            # Repository 接口定义
+    │   ├── redis.go                 # Redis 实现
+    │   └── errors.go                # 自定义错误
+    ├── service/                     # 业务逻辑层
+    │   └── link_service.go          # 短链接业务服务
+    ├── handler/                     # HTTP 处理层
+    │   └── link_handler.go          # API 请求处理器
+    ├── middleware/                  # 中间件
+    │   └── cors.go                  # CORS 中间件
+    └── router/                      # 路由层
+        └── router.go                # 路由配置
+```
 
-## 🎯 题目菜单 (任选其一)
+## 🏗️ 架构设计
 
-请根据你的技术栈，从以下 5 个题目中**任选 1 个**完成。
+采用经典的分层架构，便于扩展和维护：
 
-### A 纯前端：动态主题仪表盘 (SaaS Dashboard)
-* **目标**：构建一个销售数据看板，支持 Light/Dark 主题切换。
-* **技术**：React/Vue + Echarts/Recharts + **Tailwind/AntD (必选)**。
-* **交付**：将前端静态资源或服务容器化，实现一键启动。
+```
+┌─────────────────────────────────────────────────┐
+│                   HTTP Request                   │
+└─────────────────────┬───────────────────────────┘
+                      ▼
+┌─────────────────────────────────────────────────┐
+│              Middleware (CORS, etc.)            │
+└─────────────────────┬───────────────────────────┘
+                      ▼
+┌─────────────────────────────────────────────────┐
+│                Router (路由层)                   │
+│            定义 API 路由和端点                    │
+└─────────────────────┬───────────────────────────┘
+                      ▼
+┌─────────────────────────────────────────────────┐
+│               Handler (处理层)                   │
+│         解析请求、验证、返回响应                   │
+└─────────────────────┬───────────────────────────┘
+                      ▼
+┌─────────────────────────────────────────────────┐
+│               Service (服务层)                   │
+│             核心业务逻辑                          │
+└─────────────────────┬───────────────────────────┘
+                      ▼
+┌─────────────────────────────────────────────────┐
+│             Repository (数据层)                  │
+│           数据存储抽象接口                        │
+└─────────────────────┬───────────────────────────┘
+                      ▼
+┌─────────────────────────────────────────────────┐
+│                Redis / 其他存储                  │
+└─────────────────────────────────────────────────┘
+```
 
-### B 纯后端：短链接生成服务 (URL Shortener)
-* **目标**：实现长链接转短链接的 REST API (POST/GET)，含重定向逻辑。
-* **技术**：Python/Go/Java/Node + Redis/SQLite。
-* **交付**：API 服务与数据库均需 Docker 化。
+## 🚀 快速启动
 
-### C 全栈：看板任务管理 (Kanban Board) —— ⭐ 推荐
-* **目标**：实现类似 Trello 的任务拖拽 (Todo/Doing/Done) 及数据同步。
-* **技术**：Web 前端 + 后端 API + 数据库。
-* **交付**：前后端及数据库必须通过 `docker compose` 一键联调。
+### 使用 Docker Compose（推荐）
 
-### D 跨平台/小程序：咖啡点单 (Coffee Order App)
-* **目标**：模拟点单流程（商品列表、规格选择、购物车）。
-* **技术**：Uni-app / Taro / Flutter / 微信原生。
-* **交付**：**客户端代码本地运行** + **后端 API/DB 必须 Docker 化**。
+```bash
+# 在项目根目录执行
+docker compose up
 
-### E 原生移动端：健身计时器 (Fitness Timer)
-* **目标**：HIIT 倒计时工具，支持后台运行和声音提示。
-* **技术**：Swift / Kotlin / React Native。
-* **交付**：**App 代码本地运行** + **后端 API/DB 必须 Docker 化**。
+# 后台运行
+docker compose up -d
 
----
+# 停止服务
+docker compose down
+```
 
-## 📦 统一交付标准 (Unified Delivery Standard)
+服务启动后访问：`http://localhost:8080`
 
-本项目强制要求 **Docker 化交付**。请根据你选择的题目类型，遵守以下目录结构和规范：
+### 本地开发
 
-### 1. 针对 Web / 全栈 / 纯后端 (Type A, B, C)
-你的仓库必须包含完整的前后端容器配置。
-* **结构示例**：
-  ```text
-  ├── frontend/ (含 Dockerfile)
-  ├── backend/  (含 Dockerfile)
-  └── docker-compose.yml  <-- 必须包含，负责启动所有服务
-### 验收标准
-阅卷官执行 `docker compose up` 后，浏览器打开 `localhost:xxxx` 即可正常使用。
+```bash
+# 1. 启动 Redis
+docker run -d --name redis -p 6379:6379 redis:7-alpine
 
-### 2. 针对 移动端/小程序
-我们理解 App 无法在容器内运行，因此采取
-**“后端装箱，前端裸奔”**的策略。
+# 2. 进入 backend 目录
+cd backend
 
-* **结构示例**：
-  ```text
-  ├── client/             <-- 放置 App/小程序源码 (无需 Docker)
-  ├── backend/            <-- 放置后端 API 源码 (必须 Docker)
-  └── docker-compose.yml  <-- 仅负责启动 backend 和 db
-  ### 验收标准
-* **GitHub Actions** 必须能成功构建 Backend 镜像。
-* **必须提供录屏**：展示 App 在模拟器/真机上运行，并成功连接 Docker 后端的演示。
+# 3. 下载依赖
+go mod tidy
 
-> ⚠️ **网络连接提示 (Crucial Tip)**：
-> 在模拟器中访问 Docker 后端时，**不能使用 `localhost`**：
-> * **Android 模拟器**：请尝试 `10.0.2.2:端口`
-> * **真机调试**：请使用电脑的局域网 IP (如 `192.168.1.x`)
-> * *请在代码中预留 Base URL 配置项。*
+# 4. 运行服务
+go run main.go
+```
 
----
+## 🔧 环境变量配置
 
-## 🚨 验收红线 (Red Lines)
-**出现以下情况将直接淘汰，不予人工审核：**
+| 变量名 | 默认值 | 说明 |
+|--------|--------|------|
+| `SERVER_PORT` | `8080` | 服务端口 |
+| `BASE_URL` | `http://localhost:8080` | 短链接基础 URL |
+| `REDIS_ADDR` | `localhost:6379` | Redis 地址 |
+| `REDIS_PASSWORD` | `""` | Redis 密码 |
+| `GIN_MODE` | `debug` | Gin 运行模式 (`debug`/`release`) |
 
-* ❌ **CI 构建失败**：GitHub Actions 页面显示红色 ❌ (Build Failed)。
-* ❌ **无 Docker 配置**：根目录找不到有效 `docker-compose.yml`。
-* ❌ **UI 审美缺失**：界面排版混乱、无间距、使用浏览器默认样式。
-* ❌ **缺少演示视频**：移动端/小程序未提供真机运行录屏。
+## 📡 API 接口
 
----
+### 创建短链接
 
-## 🚀 操作流程 (How to Start)
+```bash
+POST /api/shorten
+Content-Type: application/json
 
-1.  **领取考卷**：点击本页面右上角绿色按钮 **[Use this template]** -> **Create a new repository**。
-    * *注意：请将你的仓库设为 **Public**，否则 Actions 可能无法运行。*
-2.  **AI 开发**：使用 Cursor/Antigravity 等工具完成代码。
-3.  **机器自测**：Push 代码后，点击仓库顶部的 **[Actions]** 标签，确保显示 ✅ (Green)。
-4.  **提交作业**：
-    * 请将 **GitHub 仓库链接** + **Actions 绿灯截图** + **演示视频** 提交给招聘方。
+{
+  "url": "https://github.com/example/repo"
+}
+```
+
+**响应示例：**
+```json
+{
+  "short_code": "abc123",
+  "short_url": "http://localhost:8080/abc123",
+  "original_url": "https://github.com/example/repo"
+}
+```
+
+### 访问短链接（重定向）
+
+```bash
+GET /:code
+
+# 示例
+curl -L http://localhost:8080/abc123
+```
+
+### 获取链接信息
+
+```bash
+GET /api/info/:code
+```
+
+**响应示例：**
+```json
+{
+  "short_code": "abc123",
+  "original_url": "https://github.com/example/repo",
+  "created_at": "2026-01-19T10:30:00Z",
+  "clicks": 42
+}
+```
+
+### 获取所有链接
+
+```bash
+GET /api/links
+```
+
+### 删除链接
+
+```bash
+DELETE /api/links/:code
+```
+
+### 健康检查
+
+```bash
+GET /health
+```
+
+## 🧩 扩展指南
+
+### 添加新的存储后端
+
+1. 在 `internal/repository/` 下创建新文件（如 `mysql.go`）
+2. 实现 `LinkRepository` 接口
+3. 在 `main.go` 中替换 repository 初始化逻辑
+
+```go
+// 示例：切换到 MySQL
+type MySQLRepository struct {
+    db *sql.DB
+}
+
+func (r *MySQLRepository) Save(ctx context.Context, link *models.Link) error {
+    // 实现保存逻辑
+}
+// ... 实现其他接口方法
+```
+
+### 添加新的 API 端点
+
+1. 在 `internal/service/link_service.go` 中添加业务方法
+2. 在 `internal/handler/link_handler.go` 中添加处理函数
+3. 在 `internal/router/router.go` 中注册路由
+
+## 🛠️ 技术栈
+
+- **Go 1.23** - 编程语言
+- **Gin** - Web 框架
+- **Redis** - 数据存储
+- **Docker** - 容器化部署
+
+## 📝 License
+
+MIT
